@@ -1,0 +1,47 @@
+<html>
+	<head>
+		<title>Chat</title>
+	</head>
+	<body>
+		<h3>Chat</h3>
+		<ul id="messages" />
+		<form id="connect-form" action="">
+			<input type="text" id="username" autocomplete="false" placeholder="Enter name..." />
+			<button>Connect</button>
+		</form>
+		<form id="message-form" action="">
+			<input type="text" id="new-message" autocomplete="false" placeholder="Type message..." />
+			<button>Send</button>
+			<p>Logged in as <span id="logged-in-user"></span></p>
+		</form>
+		<script src="/socket.io/socket.io.js"></script>
+		<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+		<script>
+		$(function() {
+			var socket;
+			$('#message-form').hide();
+			$('#connect-form').submit(function() {
+				socket = io();
+				var username = $('#username').val();
+				socket.emit('connect-user', { username: username });
+				$('#logged-in-user').text(username);
+				$('#username').val('');
+				$('#connect-form').hide();
+				$('#message-form').show();
+
+				socket.on('new-message', function(data) {
+					$('#messages').append($('<li>').text(data.username + ': ' + data.message));
+				});
+
+				return false;
+			});
+			$('#message-form').submit(function(){
+				socket.emit('new-message', { username: $('#logged-in-user').text(), message: $('#new-message').val() });
+				$('#new-message').val('');
+				return false;
+			});
+
+		});
+		</script>
+	</body>
+</html>
